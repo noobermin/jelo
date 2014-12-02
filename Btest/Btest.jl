@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 using jelo
 
 Bc=1.0
