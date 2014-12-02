@@ -10,10 +10,10 @@ Options:
   --periods=T -n T     Run for T periods. [default: 2].
   --intensity=I -I I   Use an intensity of I in W/cm^2. [default: 1e18].
   --starting=Z  -Z X   Use the starting fraction of wavelength. [default: 0.125].
-  --ET=ET              Run with a time phase of ET*pi for the electric field.
-  --BT=BT              Run with a time phase of BT*pi for the magnetic field.
-  --ES=ES              Run with a space phase of ES*pi for the electric field.
-  --BS=BS              Run with a space phase of BS*pi for the magnetic field.
+  --ET=ET              Run with a time phase of ET*pi for the electric field. [default: 0.0].
+  --BT=BT              Run with a time phase of BT*pi for the magnetic field. [default: 0.0].
+  --ES=ES              Run with a space phase of ES*pi for the electric field. [default: 1.5].
+  --BS=BS              Run with a space phase of BS*pi for the magnetic field. [default: 1.5].
   --unitless           Run the unitless simulation.
 "
 using DocOpt
@@ -28,21 +28,22 @@ const m_cgs = 9.10938291e-27;
 const e0 = 8.854187817e-12;
 const dt_factor = 100;
 
-I=float(opts["--intensity"]);
-Z=float(opts["--starting"]);
-T=float(opts["--periods"]);
+I  = float(opts["--intensity"]);
+Z  = float(opts["--starting"]);
+T  = float(opts["--periods"]);
+Et = float(opts["--ET"]);
+Bt = float(opts["--BT"]);
+Es = float(opts["--ES"]);
+Bs = float(opts["--BS"]);
+
 if opts["--unitless"]
     E_0 = sqrt(2I/(c_mks*e0));
     qmr = -(E_0*l)/(pi*.511e6);
     dt  = abs(1.0/qmr/dt_factor);
     zi  = 2pi*Z;
     N   = 2pi*T;
-    function E(v,u)
-        [1.0,0.0,0.0]*cos(u+pi*Et)*cos(v[3]+pi*Es);
-    end
-    function B(v,u)
-        [0.0,1.0,0.0]*cos(u+pi*Bt)*cos(v[3]+pi*Bs);
-    end
+    E(v,u)=[1.0,0.0,0.0]*cos(u+pi*Et)*cos(v[3]+pi*Es);
+    B(v,u)=[0.0,1.0,0.0]*cos(u+pi*Bt)*cos(v[3]+pi*Bs);
 else
     E_0 = sqrt(4pi*I*1e-7/c_cgs);
     qmr = -e_cgs/m_cgs;
