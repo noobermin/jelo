@@ -33,10 +33,10 @@ export e,c;
 using integrate
 #constants
 global c,e;
-#const c = 2.99792458e10;
-#const e = 4.80320425e-10;
-const c = 1.0;
-const e = 0.302822;
+const c = 2.99792458e10;
+const e = 4.80320425e-10;
+# const c = 1.0;
+# const e = 0.302822;
 
 function lorentz(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
     qmr*(E(x,t)+cross(v/c,B(x,t)))
