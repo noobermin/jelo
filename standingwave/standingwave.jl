@@ -19,10 +19,11 @@ using DocOpt
 opts=docopt(doc);
 using jelo
 
-const l = 800e-9;
+#const l = 800e-9;
+const l = 8e-5;
 const c_mks = 2.99792458e8;
-const e_cgs = 4.80320425e-10;
-const m_cgs = 9.10938291e-28;
+#const e_cgs = 4.80320425e-10;
+const m_e = 9.10938291e-28;
 const e0 = 8.854187817e-12;
 const dt_factor = 100;
 
@@ -44,10 +45,10 @@ Bs = float(opts["--BS"]);
 # B(v,u)=[0.0,1.0,0.0]*cos(u+pi*Bt)*cos(v[3]+pi*Bs);
 
 E_0 = sqrt(4pi*I*1e7/c);
-qmr = -e/m_cgs;
-period = l*1e2/c;
-dt  = min(abs(c/(2qmr*E_0)/dt_factor),period/10000);
-zi  = l*Z*100;
+qmr = -e/m_e;
+period = l/c;
+dt  = min(abs(c/(2qmr*E_0)/dt_factor),period/1e4);
+zi  = l*Z;
 N   = int(round(period*T/dt));
 
 function E(x,t)
@@ -56,7 +57,6 @@ end
 function B(x,t)
     [0.0,1.0,0.0]*2.0*E_0*cos(2*pi/l*c*t+pi*Bt)*cos(2*pi/l*x[3]+pi*Bs);
 end
-
 
 #initializing
 j=Jelo(E, B, dt)
