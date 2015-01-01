@@ -1,7 +1,6 @@
 module integrate
 export leapfrog
 
-
 function leapfrog(x,v,a::Function,t::Real,dt::Real)
     a1 = a(x,v,t)
     x += (v + a1*dt/2.0)*dt;
@@ -20,7 +19,6 @@ function rk4(x,v,a::Function,t::Real,dt::Real)
 end
 
 end
-
 
 
 module jelo

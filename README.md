@@ -1,7 +1,7 @@
 jelo
 ====
 
-A Julia implementation of the EM solver electro, that is <b>J</b>ulia
+A Julia implementation of the EM solver `electro`, that is <b>J</b>ulia
 <b>El</b>ectr<b>o</b> or `jelo`. Mind you, this was written within about
 a week of studying the [Julia docs](http://julia.readthedocs.org), which
 is a testament to how shit easy it is to learn/use Julia. The code itself was
@@ -15,8 +15,12 @@ To use, it import jelo.
 using jelo
 ```
 
-Define electric and magnetic field functions, then create the `jelo` object.
+Define space-time dependent electric and magnetic field functions, then create
+the `jelo` object which represents the simulation.
 ```
+myE(x,t)=[0,1,0]
+myB(x,t)=[0,0,1]*sin(w*t)
+
 j=Jelo(myE,myB, dt)
 ```
 Add particles to the simulation using the `add` method,
