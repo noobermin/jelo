@@ -1,7 +1,8 @@
 #!/bin/bash
 
-ln -s ../jelo.jl
-ln -s ../scripts/txt2p.py
-ln -s ../scripts/plot3d.py
-ln -s ../scripts/check_lightspeed.py
+ln -fs ../jelo.jl
+ln -fs ../electro-scripts/txt2p.py
+ln -fs ../electro-scripts/plot3d.py
+ln -fs ../electro-scripts/check_lightspeed.py
 
+chmod u+x standingwave.jl
