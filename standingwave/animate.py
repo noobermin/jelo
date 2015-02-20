@@ -10,12 +10,13 @@ Options:
   -e END                Read to index END.
   -s STEP               Read with STEP.
   -o OUTPUT             Output to OUTPUT, if not chosen, just display.
-  --intensity=I -I I    Set the intensity to I. [default: 1e18]
+  --intensity=I -I I    Set the intensity to I in W/cm^2. [default: 1e18]
   --ET=ET               Run with a time phase of ET*pi for the electric field. [default: 0.0].
   --BT=BT               Run with a time phase of BT*pi for the magnetic field. [default: 0.0].
   --ES=ES               Run with a space phase of ES*pi for the electric field. [default: 1.5].
   --BS=BS               Run with a space phase of BS*pi for the magnetic field. [default: 1.5].
   --no-B                Don't plot the B-field.
+  --unitless            Plot for the unitless case.
 '''
 import math as m;
 import matplotlib.pyplot as plt;
@@ -54,16 +55,26 @@ d = d[:,:,0]
 x=d[0,:]; y=d[1,:]; z=d[2,:]
 del d;
 
-x = x[:end:step]*1e4;
-z = z[:end:step]*1e4;
+    
+y = y[:end:step];
+z = z[:end:step];
 t = t[:end:step];
+
+if opts['--unitless']:
+    units = lm/(2*np.pi);
+    y*=units;
+    z*=units;
+    t*=lm/(2*np.pi*c);
+else:
+    y*=1e4;
+    z*=1e4;
 
 zmin = m.floor(z.min()/(lm/2))*lm/2;
 zmax = m.ceil(z.max()/(lm/2))*lm/2;
-xmin = x.min();
-xmax = x.max();
+ymin = y.min();
+ymax = y.max();
 
-X,Z = np.mgrid[ xmin : xmax : 16j,
+Y,Z = np.mgrid[ ymin : ymax : 16j,
                 zmin : zmax : 16j];
 zeros = np.zeros(Z.shape);
 Ez = np.cos(2*np.pi*Z/lm+Es*np.pi)*E_0;
@@ -71,23 +82,23 @@ Ez = np.cos(2*np.pi*Z/lm+Es*np.pi)*E_0;
 #initial plotting
 fig = plt.figure();
 ax = fig.add_subplot(111);
-p, = ax.plot(x[0:1],z[0:1],marker='o',label='r',c='r');
+p, = ax.plot(y[0:1],z[0:1],marker='o',label='r',c='r');
 if not opts['--no-B']:
-    Xh,Zh = np.mgrid[ xmin : xmax : 64j,
+    Yh,Zh = np.mgrid[ ymin : ymax : 64j,
                       zmin : zmax : 64j];
     By = -np.cos(2*np.pi*Zh/lm+Bs*np.pi)*E_0*0.0;
     By=By[:-1,:-1];
-    pc = ax.pcolormesh(Xh,Zh,By,vmin=-E_0,vmax=E_0);
-q = ax.quiver(X,Z,Ez,zeros,scale=1e9);
+    pc = ax.pcolormesh(Yh,Zh,By,vmin=-E_0,vmax=E_0);
+q = ax.quiver(Y,Z,Ez,zeros,scale=1e9);
 ax.set_ylim(zmin,zmax);
-ax.set_xlim(x.min(),x.max());
-ax.set_ylabel('x ($\mu$m)');
-ax.set_xlabel('z ($\mu$m)');
+ax.set_xlim(y.min(),y.max());
+ax.set_ylabel('z ($\mu$m)');
+ax.set_xlabel('y ($\mu$m)');
 
 def animate(ii):
     i,t=ii;
     Ez = np.cos(2*np.pi*Z/lm+Es*np.pi)*np.cos(2*np.pi/lm*c*t+Et*np.pi)*E_0;
-    p.set_data(x[0:i],z[0:i]);
+    p.set_data(y[0:i],z[0:i]);
     q.set_UVC(Ez,zeros);
     if not opts['--no-B']:
         By = -np.cos(2*np.pi*Zh/lm+Bs*np.pi)*np.cos(2*np.pi/lm*c*t+Bt*np.pi)*E_0;
