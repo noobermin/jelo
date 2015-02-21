@@ -16,7 +16,8 @@ Options:
   --ES=ES               Run with a space phase of ES*pi for the electric field. [default: 1.5].
   --BS=BS               Run with a space phase of BS*pi for the magnetic field. [default: 1.5].
   --no-B                Don't plot the B-field.
-  --unitless            Plot for the unitless case.
+  --unitless -u         Plot for the unitless case.
+  --dt DT -t DT         Set dt factor for unitless. [default: 1e4].
 '''
 import math as m;
 import matplotlib.pyplot as plt;
@@ -64,7 +65,7 @@ if opts['--unitless']:
     units = lm/(2*np.pi);
     y*=units;
     z*=units;
-    t*=lm/(2*np.pi*c);
+    t*=lm/(2*np.pi*c)#*float(opts['--dt']);
 else:
     y*=1e4;
     z*=1e4;
@@ -89,7 +90,7 @@ if not opts['--no-B']:
     By = -np.cos(2*np.pi*Zh/lm+Bs*np.pi)*E_0*0.0;
     By=By[:-1,:-1];
     pc = ax.pcolormesh(Yh,Zh,By,vmin=-E_0,vmax=E_0);
-q = ax.quiver(Y,Z,Ez,zeros,scale=1e9);
+q = ax.quiver(Y,Z,Ez,zeros,scale=max(E_0, 5e10));
 ax.set_ylim(zmin,zmax);
 ax.set_xlim(y.min(),y.max());
 ax.set_ylabel('z ($\mu$m)');

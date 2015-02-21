@@ -22,7 +22,6 @@ using jelo
 
 const c_si = 2.99792458e8;
 const c_cgs = 2.99792458e10;
-#const e_cgs = 4.80320425e-10;
 const m_e = 9.10938291e-28;
 const m_e_si = 9.10938291e-31;
 const e_si = 1.602176565e-19;
