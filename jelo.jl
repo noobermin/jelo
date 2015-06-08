@@ -1,5 +1,5 @@
 module integrate
-export leapfrog
+export leapfrog,rk4
 
 function leapfrog(x,v,a::Function,t::Real,dt::Real)
     a1 = a(x,v,t)
@@ -17,20 +17,18 @@ function rk4(x,v,a::Function,t::Real,dt::Real)
     xk4,vk4 = sample(x+xk3*dt,     v+vk3*dt,     t+dt);
     x+(xk1/2.0+xk2+xk3+xk4/2.0)*dt/3.0,v+(vk1/2.0+vk2+vk3+vk4/2.0)*dt/3.0
 end
-
 end
-
 
 module jelo
 
 export lorentz,relativistic_lorentz
 export particle
 export Jelo, add, step, output;
-export e,c;
+export c;
 
 using integrate
 #constants
-global c,e;
+global c;
 #const c = 2.99792458e10;
 const c = 1.0;
 
@@ -69,7 +67,7 @@ function step(j::Jelo)
     function step_one(p::particle)
         a(x,v,t::Real) = relativistic_lorentz(x,v,t::Real,
                                               p.qmr,j.E,j.B)
-        p.x,p.v = integrate.leapfrog(p.x,p.v,a,j.t,j.dt);
+        p.x,p.v = integrate.rk4(p.x,p.v,a,j.t,j.dt);
         p
     end
     map!(step_one,j.particles);
