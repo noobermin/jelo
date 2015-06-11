@@ -8,7 +8,7 @@ Usage:
 Options:
   --help -h            Print this help.
   --periods=T -n T     Run for T periods. [default: 1].
-  --intensity=I -I I   Use an intensity of I in W/cm^2. [default: 1e16].
+  --intensity=I -I I   Use an intensity of I in W/cm^2. [default: 1e18].
   --starting=X -X X    Use the starting fraction of wavelength. [default: 0.0].
   --wavelength=L -l L  Set the wavelength in cm. [default: 800e-7].
   --Ephi=ET            Run with a time phase of ET*pi for the electric field. [default: 0.0].
@@ -59,13 +59,13 @@ println("# T = $(T)");
 # parsing b0
 if typeof(opts["--b0"]) == Nothing
     b0 = [-a_0^2/(a_0^2+4), 0.0, 0.0];
-    println("# -a0^2/(a0^2+4) = $(b0[1])");
 else
     b0 = map(float,split(opts["--b0"],","));
-    println("# b0 = $(b0[1]),$(b0[2]),$(b0[3])");
 end
-bp = -a_0^2/(a_0^2+4);
-b0_ = -(b0[1]-bp)/(1-b0[1]*bp);
+println("#v0 = $(b0[1]),$(b0[2]),$(b0[3])");
+
+bp = a_0^2/(a_0^2+4);
+b0_ = -(b0[1]+bp)/(1+b0[1]*bp);
 N   = int(round(2pi*T/(1+b0_)/dt));
 println("# N = $(N)");
 # parsing dt
