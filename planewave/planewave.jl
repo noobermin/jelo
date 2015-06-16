@@ -36,7 +36,7 @@ Ephi = float(opts["--Ephi"]);
 Bphi = float(opts["--Bphi"]);
 
 
-# calculate a_0
+# calculate a0
 
 E_0 = sqrt(2I*1e4/(c_si*e0));
 period = l/c_cgs;
@@ -44,29 +44,30 @@ w = 2pi/period;
 # the natural timescale
 tau = m_e_si*c_si/(e_si*E_0);
 # and a_0
-a_0 = 1/(tau*w);
+a0 = 1/(tau*w);
 if typeof(opts["--dt"]) == Nothing
-    dt = 1/(a_0^2*dt_factor);
+    dt = 1/(a0^2*dt_factor);
 else
     dt = float(opts["--dt"]);
 end
 
 xi  = 2pi*X;
 
-println("# a0 = $(a_0)");
+println("# a0 = $(a0)");
 println("# dt = $(dt)");
 println("# T = $(T)");
 # parsing b0
 if typeof(opts["--b0"]) == Nothing
-    b0 = [-a_0^2/(a_0^2+4), 0.0, 0.0];
+    b0 = [-a0^2/(a0^2+4), 0.0, 0.0];
 else
     b0 = map(float,split(opts["--b0"],","));
 end
-println("#v0 = $(b0[1]),$(b0[2]),$(b0[3])");
+println("#b0 = $(b0[1]),$(b0[2]),$(b0[3])");
 
-bp = a_0^2/(a_0^2+4);
-b0_ = -(b0[1]+bp)/(1+b0[1]*bp);
-N   = int(round(2pi*T/(1+b0_)/dt));
+gm = 1.0/sqrt(1-dot(b0,b0))
+#f = (a0^2/(gm*(1-b0[1])) + 4*gm)^2/(16+a0^2);
+f =  (1 + a0^2/(4*gm^2*(1-b0[1])))/(1-b0[1]);
+N   = int(round(2pi*T*f/dt));
 println("# N = $(N)");
 # parsing dt
 
@@ -77,7 +78,7 @@ B(v,u) = cos(u-v[1]+Bphi*pi)*[0.0,0.0,1.0];
 #initializing
 j=Jelo(E, B, dt)
 
-add(j, particle([xi,0,0], b0, -a_0))
+add(j, particle([xi,0,0], b0, -a0))
 
 #running
 for x = 1:N

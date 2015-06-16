@@ -32,7 +32,7 @@ end  = int(opts['-e']) if opts['-e'] else None;
 step = int(opts['-s']) if opts['-s'] else None;
 output = opts['-o'];
 
-#IMPORTANT: we use microns and seconds here.
+
 lm = 8e-7;
 c = 2.99792458e8;
 e0 = 8.854e-12
@@ -92,10 +92,9 @@ x = x[:end:step];
 y = y[:end:step];
 
 #generate analytic solution plot
-#IMPORTANT: I use meters here...sorry about that.
 #obtain b0 from the comment lines (HACKING)
-b0x_s = [s for s in cl if re.match(r'^# *v0',s)][0];
-b0x,b0y,b0z = eval(re.sub(r'^# *v0 *= *(.*)$',r'[\1]',b0x_s));
+b0x_s = [s for s in cl if re.match(r'^# *b0',s)][0];
+b0x,b0y,b0z = eval(re.sub(r'^# *b0 *= *(.*)$',r'[\1]',b0x_s));
 b0 = np.sqrt(b0x**2+b0y**2+b0z**2);
 
 #get quiver velocity
@@ -105,20 +104,13 @@ a0 = eval(re.sub(r'^# *a0 *= *(.*)$',r'\1',a0_s));
 a0_s = [s for s in cl if re.match(r'^# *T',s)][0];
 T = eval(re.sub(r'^# *T *= *(.*)$',r'\1',a0_s));
 
-e0 = 8.854e-12
-c = 2.99792458e8;
-me_si = 9.10938291e-31;
-e  = 1.602e-19
-
-b  = -((b0x+1)*a0**2/4+b0x)/((b0x+1)*a0**2/4+1);
-gm = ((b0x+1)*a0**2/4+1)/np.sqrt(a0**2/2+1)/np.sqrt(1-b0x**2)
-z  = np.sqrt( (1+b0x)/(1-b0x) );
-print("bp={}, b={}, gm={}".format(a0**2/(a0**2+4),b,gm));
-
+#redshift factor
+rs = np.sqrt(1-b0**2)/(1-b0x);
 
 h = np.linspace(0,T*2*np.pi, len(x));
-kx = a0**2/4*(1+b0x)/(1-b0x)*(h-np.sin(2*h)/2) + h*b0x/(1-b0x);
-ky = a0*np.sqrt( (1+b0x)/(1-b0x) )*(np.cos(h)-1);
+kx = h*b0x/(1-b0x) + a0**2/4*rs**2*(h - np.sin(2*h)/2) + a0*(np.cos(h)-1)*rs*b0y/(1-b0x)
+ky = h*b0y/(1-b0x) + a0*rs*(np.cos(h)-1);
+kz = h*b0z/(1-b0x);
 
 ax = kx;
 ay = ky;
@@ -129,8 +121,6 @@ plt.plot(ky, kx, marker='+',label='analytic',c='r');
 plt.legend(loc="upper left");
 plt.xlabel(ylabel);
 plt.ylabel(xlabel);
-#plt.xlim(ymin,ymax);
-#plt.ylim(xmin,xmax);
 
 if output:
     plt.savefig(output);
