@@ -1,0 +1,21 @@
+#!/bin/bash
+
+rnd(){
+    echo "scale=5;$1*$RANDOM/32767" | bc
+}
+
+if [[ -z $1 ]]; then
+    END=20
+else
+    END=$1
+fi;
+
+for (( i=0; i < $END; ++i )); do
+    XI=$(rnd 0.5)
+    while [ $(pgrep -fa '/bin/bash.*prefix/bin/julia' | wc -l) -gt 3 ]; do
+        echo "sleeping..."
+        sleep 10;
+    done
+    echo "running $XI"
+    ./mirrorsw.jl -x $XI | ./txt2p.py > $XI.pi && gzip -v $XI.pi &
+done
