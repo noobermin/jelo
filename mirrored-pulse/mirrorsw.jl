@@ -76,7 +76,7 @@ fi(x,t) = Pi(x,t)*sin(ηi(x,t))*a0
 fr(x,t) = -Pr(x,t)*sin(ηr(x,t))*a0
 # E and B fields
 E(x,t) = (fi(x,t)+fr(x,t))*[0.0,1.0,0.0];
-B(x,t) = (fi(x,t)+fr(x,t))*[0.0,0.0,1.0];
+B(x,t) = (fi(x,t)-fr(x,t))*[0.0,0.0,1.0];
 
 #initializing
 j=Jelo(E, B, dt)
