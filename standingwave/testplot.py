@@ -35,7 +35,6 @@ E_0 = np.sqrt(2*I/(c_si*e0));
 a0  = e_si*E_0/(m_e_si*c_si*w);
 print(a0);
 #fucking matlab
-t = np.linspace(0,2*np.pi*10,10000);
 x  = np.array([0.0, 0.0, 0.125*2*np.pi]);
 b0 = np.array([0.0, 0.0, 0.0]);
 beta, v = born(x,b0,

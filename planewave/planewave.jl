@@ -7,7 +7,7 @@ Usage:
 
 Options:
   --help -h            Print this help.
-  --periods=T -n T     Run for T periods. [default: 1].
+  --periods=T -n T     Run for wt = 2pi*T. [default: 1].
   --intensity=I -I I   Use an intensity of I in W/cm^2. [default: 1e18].
   --starting=X -X X    Use the starting fraction of wavelength. [default: 0.0].
   --wavelength=L -l L  Set the wavelength in cm. [default: 800e-7].
@@ -64,10 +64,7 @@ else
 end
 println("#b0 = $(b0[1]),$(b0[2]),$(b0[3])");
 
-gm = 1.0/sqrt(1-dot(b0,b0))
-#f = (a0^2/(gm*(1-b0[1])) + 4*gm)^2/(16+a0^2);
-f =  (1 + a0^2/(4*gm^2*(1-b0[1])))/(1-b0[1]);
-N   = int(round(2pi*T*f/dt));
+N   = int(round(2pi*T/dt));
 println("# N = $(N)");
 # parsing dt
 

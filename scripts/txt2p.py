@@ -19,25 +19,26 @@ inname = opts['<infile>'];
 #get data and split
 if inname:
     with open(inname,'r') as f:
-        lines_list = map(strip,f.readlines());
+        lines = map(strip,f.readlines());
 else:
-    lines_list = list(fileinput.input());
+    lines = list(fileinput.input());
 # skip lines starting with #
 comment = re.compile(r"^ *#");
-lines_list = [l for l in lines_list if not comment.match(l)];
+datalines = [l for l in lines if not comment.match(l)];
+commentlines = [l for l in lines if comment.match(l)];
 #count number of particles
-N=len(lines_list[0].split(';'));
+N=len(datalines[0].split(';'));
 r = re.compile(r'[:,\,,;]');
-lines_list[:] = map(lambda i: r.sub(' ',i), lines_list);
+datalines[:] = map(lambda i: r.sub(' ',i), datalines);
 
-lines = np.array(map(lambda i: np.fromstring(i,sep=' '), lines_list));
+lines = np.array(map(lambda i: np.fromstring(i,sep=' '), datalines));
 time = lines[:,0];
  #shape now is [quantity, time, particle];
 lines = lines[:,1:].T.reshape(6,-1,N);
 if inname:
     with open(opts['<outfile>'],'wb') as f:
-        pickle.dump((time,lines),f,2);
+        pickle.dump((time,lines,commentlines),f,2);
 else:
-    print(pickle.dumps((time,lines)));
+    print(pickle.dumps((time,lines,commentlines)));
 pass;
 

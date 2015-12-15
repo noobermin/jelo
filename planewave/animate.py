@@ -84,7 +84,7 @@ p, = ax.plot(y[0:1],x[0:1],marker='o',label='r',c='r');
 if not opts['--no-B']:
     Yh,Xh = np.mgrid[ ymin : ymax : 64j,
                       xmin : xmax : 64j];
-    Bz = np.cos(2*np.pi/lm*(Xh-c*0) + Bphi*np.pi)*E_0
+    Bz = np.cos(2*np.pi/lm*(c*0-Xh) + Bphi*np.pi)*E_0
     Bz=Bz[::-1,::1];
     #Bz=Bz[:-1,:-1];
     pc = ax.pcolormesh(Yh,Xh,Bz,vmin=-E_0,vmax=E_0);
@@ -97,11 +97,11 @@ ax.set_xlabel('y ($\mu$m)');
 
 def animate(ii):
     i,t=ii;
-    Ey = np.cos(2*np.pi/lm*(X-c*t) + Ephi*np.pi)*E_0;
+    Ey = np.cos(2*np.pi/lm*(c*t-X) + Ephi*np.pi)*E_0;
     p.set_data(y[0:i],x[0:i]);
     q.set_UVC(Ey,zeros);
     if not opts['--no-B']:
-        Bz = np.cos(2*np.pi/lm*(Xh-c*t) + Bphi*np.pi)*E_0
+        Bz = np.cos(2*np.pi/lm*(c*t-Xh) + Bphi*np.pi)*E_0
         Bz=Bz[:1:-1,:-1:1];
         pc.set_array(Bz.ravel());
     return p,q;

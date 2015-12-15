@@ -110,6 +110,6 @@ def animate(ii):
 ts = list(enumerate(t));
 a = anim.FuncAnimation(fig,animate, ts, interval=0.01);
 if output:
-    a.save(output,fps=15);
+    a.save(output,fps=5);
 else:
     plt.show();

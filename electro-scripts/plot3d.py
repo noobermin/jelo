@@ -27,9 +27,9 @@ output = opts['-o'];
 
 if opts['<infile>']:
     with open(opts['<infile>'],'rb') as f:
-        t,d=pickle.load(f);
+        t,d,_=pickle.load(f);
 else:
-    t,d=pickle.loads(sys.stdin.read());
+    t,d,_=pickle.loads(sys.stdin.read());
 
 #first particle
 d = d[:,:,0]
