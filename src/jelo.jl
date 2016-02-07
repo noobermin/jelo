@@ -86,10 +86,10 @@ type Jelo
     t::Real
     dt::Real
     function Jelo(E::Function,B::Function,dt::Real,
-                  options::Dict{AbstractString,Any})
+                  options::Dict{Any,Any})
         userunits = if haskey(options, "units")
             options["units"] else "unitless" end
-        usermethod= if haskey(options, "method")
+        usermethod= if haskey(options, "imethod")
             options["imethod"] else "leapfrog"  end
         force = if userunits == "cgs"
             relativistic_lorentz_cgs
@@ -110,7 +110,7 @@ type Jelo
     end
             
     function Jelo(E::Function,B::Function,dt::Real,units::AbstractString)
-        Jelo(E,B,dt,Dict{Any,Any}("units"=>""))
+        Jelo(E,B,dt,Dict{AbstractString,Any}("units"=>units))
     end
     Jelo(E::Function,B::Function,dt::Real)=Jelo(E,B,dt,"unitless")
 end
@@ -129,9 +129,12 @@ function step(j::Jelo)
     j.t+=j.dt
 end
 
+
+vect2s(v::Vector)="$(x[1]),$(x[2]),$(x[3])"
+
 function output_str(j::Jelo)
     out_one(p::particle,last=false)=
-        "$(p.x[1]),$(p.x[2]),$(p.x[3]) $(p.v[1]),$(p.v[2]),$(p.v[3])"*(last?"":";");
+        vect2s(p.x)*" "*vect2s(p.v)*(last?"":";");
     if length(j.particles)>1
         out_first(p::particle)=out_one(p);
         en = endof(j.particles);
@@ -144,3 +147,4 @@ function output_str(j::Jelo)
 end
 
 end
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for ip in {10..25}; do
+    i="1e$ip"
+    echo Running I=$i starting at `date`
+    ./standingwave.jl -I $i | ./txt2p.py> p_${i};
+    echo Finished I=$i at `date`
+done
+
