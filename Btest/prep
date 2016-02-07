@@ -1,7 +1,0 @@
-#!/bin/bash
-
-ln -s ../jelo.jl
-ln -s ../scripts/txt2p.py
-ln -s ../scripts/plot3d.py
-ln -s ../scripts/check_lightspeed.py
-
