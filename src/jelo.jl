@@ -15,51 +15,60 @@
 # You should have received a copy of the GNU General Public License
 # along with Jelo.  If not, see <http://www.gnu.org/licenses/>.
 #
-module integrate
-export leapfrog,rk4
+include("integrate.jl");
 
-function leapfrog(x,v,a::Function,t::Real,dt::Real)
-    a1 = a(x,v,t)
-    x += (v + a1*dt/2.0)*dt;
-    a2 = a(x,v,t+dt)
-    v += (a1+a2)/2.0*dt
-    x,v
+
+
+#unfortunately, I don't know any other way around making this
+#"unitful" or not.
+module lorentz_force
+
+export c_cgs, lorentz, relativistic_lorentz
+export lorentz_cgs, relativistic_lorentz_cgs
+const c_cgs = 2.99792458e10;
+const c_si  = 2.99792458e8;
+
+function lorentz(x::Vector,b::Vector,t::Real,qmr::Real,E,B)
+    qmr*(E(x,t)+cross(b,B(x,t)))
 end
-
-function rk4(x,v,a::Function,t::Real,dt::Real)
-    sample(x,v,t)= v, a(x,v,t);
-    xk1,vk1 = sample(x,            v,            t);
-    xk2,vk2 = sample(x+xk1*dt/2.0, v+vk1*dt/2.0, t+dt/2.0);
-    xk3,vk3 = sample(x+xk2*dt/2.0, v+vk2*dt/2.0, t+dt/2.0);
-    xk4,vk4 = sample(x+xk3*dt,     v+vk3*dt,     t+dt);
-    x+(xk1/2.0+xk2+xk3+xk4/2.0)*dt/3.0,v+(vk1/2.0+vk2+vk3+vk4/2.0)*dt/3.0
-end
-end
-
-module jelo
-
-export lorentz,relativistic_lorentz
-export particle
-export Jelo, add, step, output;
-export c;
-
-using integrate
-#constants
-global c;
-#const c = 2.99792458e10;
-const c = 1.0;
-
-function lorentz(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
-    qmr*(E(x,t)+cross(v/c,B(x,t)))
-end
-
-function relativistic_lorentz(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
-    b = v/c;
+function relativistic_lorentz(x::Vector,b::Vector,t::Real,qmr::Real,E,B)
     M = eye(3)-[b[1]*b[1] b[1]*b[2] b[1]*b[3]
                 b[1]*b[2] b[2]*b[2] b[2]*b[3]
                 b[1]*b[3] b[3]*b[2] b[3]*b[3]]
-    M*lorentz(x,v,t,qmr,E,B) * sqrt(1-dot(b,b))
+    M*lorentz(x,b,t,qmr,E,B) * sqrt(1-dot(b,b))
 end
+
+#cgs
+function lorentz_cgs(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
+    lorentz(x,v/c_cgs,t,qmr,E,B)
+end
+function relativistic_lorentz_cgs(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
+    relativistic_lorentz(x,v/c_cgs,t,qmr,E,B)
+end
+
+#si
+function lorentz_si(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
+    lorentz(x,v,t,qmr,E,B)
+end
+function relativistic_lorentz_si(x::Vector,v::Vector,t::Real,qmr::Real,E,B)
+    b=v/c_si;
+    M = eye(3)-[b[1]*b[1] b[1]*b[2] b[1]*b[3]
+                b[1]*b[2] b[2]*b[2] b[2]*b[3]
+                b[1]*b[3] b[3]*b[2] b[3]*b[3]]
+    M*lorentz_si(x,v,t,qmr,E,B) * sqrt(1-dot(b,b))
+end
+
+
+
+end
+
+module jelo;
+export particle
+export Jelo, add, step, output_str;
+
+using integrate;
+using lorentz_force;
+export c_cgs, c_si;
 
 type particle
     x::Vector
@@ -72,9 +81,22 @@ type Jelo
     #E and B fields
     E::Function
     B::Function
+    force::Function
     t::Real
     dt::Real
-    Jelo(E::Function,B::Function,dt::Real)=new(particle[],E,B,0,dt);
+    function Jelo(E::Function,B::Function,dt::Real,units::AbstractString)
+        force = if units == "cgs"
+            relativistic_lorentz_cgs
+        elseif units == "si"
+            relativistic_lorentz_si    
+        elseif units == "unitless"
+            relativistic_lorentz
+        else
+            error("units must be either \"cgs\",\"si\", or \"unitless\"")
+        end
+        new(particle[],E,B,force,0,dt)
+    end
+    Jelo(E::Function,B::Function,dt::Real)=Jelo(E,B,dt,"unitless")
 end
 #adding particles to the simulation
 add(j::Jelo,p::particle) = push!(j.particles,p)
@@ -82,8 +104,8 @@ add(j::Jelo,p::particle) = push!(j.particles,p)
 
 function step(j::Jelo)
     function step_one(p::particle)
-        a(x,v,t::Real) = relativistic_lorentz(x,v,t::Real,
-                                              p.qmr,j.E,j.B)
+        a(x,v,t::Real) = j.force(x,v,t::Real,
+                                 p.qmr,j.E,j.B)
         p.x,p.v = integrate.rk4(p.x,p.v,a,j.t,j.dt);
         p
     end
@@ -91,7 +113,7 @@ function step(j::Jelo)
     j.t+=j.dt
 end
 
-function output(j::Jelo)
+function output_str(j::Jelo)
     out_one(p::particle,last=false)=
         "$(p.x[1]),$(p.x[2]),$(p.x[3]) $(p.v[1]),$(p.v[2]),$(p.v[3])"*(last?"":";");
     if length(j.particles)>1
