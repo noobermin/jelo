@@ -82,19 +82,35 @@ type Jelo
     E::Function
     B::Function
     force::Function
+    imethod::Function
     t::Real
     dt::Real
-    function Jelo(E::Function,B::Function,dt::Real,units::AbstractString)
-        force = if units == "cgs"
+    function Jelo(E::Function,B::Function,dt::Real,
+                  options::Dict{Any,Any})
+        userunits = if haskey(options, "units")
+            options["units"] else "unitless" end
+        usermethod= if haskey(options, "imethod")
+            options["imethod"] else "leapfrog"  end
+        force = if userunits == "cgs"
             relativistic_lorentz_cgs
-        elseif units == "si"
+        elseif userunits == "si"
             relativistic_lorentz_si    
-        elseif units == "unitless"
+        elseif userunits == "unitless"
             relativistic_lorentz
         else
             error("units must be either \"cgs\",\"si\", or \"unitless\"")
         end
-        new(particle[],E,B,force,0,dt)
+        method = if usermethod == "rk4"
+            integrate.rk4
+        elseif usermethod == "leapfrog"
+            integrate.leapfrog
+        else usermethod end
+
+        new(particle[],E,B,force,method,0,dt);
+    end
+            
+    function Jelo(E::Function,B::Function,dt::Real,units::AbstractString)
+        Jelo(E,B,dt,Dict{AbstractString,Any}("units"=>units))
     end
     Jelo(E::Function,B::Function,dt::Real)=Jelo(E,B,dt,"unitless")
 end
@@ -106,16 +122,19 @@ function step(j::Jelo)
     function step_one(p::particle)
         a(x,v,t::Real) = j.force(x,v,t::Real,
                                  p.qmr,j.E,j.B)
-        p.x,p.v = integrate.rk4(p.x,p.v,a,j.t,j.dt);
+        p.x,p.v = j.imethod(p.x,p.v,a,j.t,j.dt);
         p
     end
     map!(step_one,j.particles);
     j.t+=j.dt
 end
 
+
+vect2s(v::Vector)="$(x[1]),$(x[2]),$(x[3])"
+
 function output_str(j::Jelo)
     out_one(p::particle,last=false)=
-        "$(p.x[1]),$(p.x[2]),$(p.x[3]) $(p.v[1]),$(p.v[2]),$(p.v[3])"*(last?"":";");
+        vect2s(p.x)*" "*vect2s(p.v)*(last?"":";");
     if length(j.particles)>1
         out_first(p::particle)=out_one(p);
         en = endof(j.particles);
@@ -128,3 +147,4 @@ function output_str(j::Jelo)
 end
 
 end
+
